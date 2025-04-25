@@ -15,10 +15,21 @@ resource "ovh_cloud_project_kube_nodepool" "node_pool" {
   service_name  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   kube_id       = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   name          = "my-pool-1" //Warning: "_" char is not allowed!
-  flavor_name   = "b2-7"
+  flavor_name   = "b3-8"
   desired_nodes = 3
-  max_nodes     = 3
-  min_nodes     = 3
+}
+```
+
+Create a simple node pool in your Kubernetes cluster **for multi-zones cluster**:
+
+```terraform
+resource "ovh_cloud_project_kube_nodepool" "node_pool" {
+  service_name      = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  kube_id           = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  name              = "my-pool-1" //Warning: "_" char is not allowed!
+  flavor_name       = "b3-8"
+  availability_zone = ["eu-west-par-a"] // Only one zone is supported at the moment on the same pool
+  desired_nodes     = 3
 }
 ```
 
@@ -29,9 +40,10 @@ resource "ovh_cloud_project_kube_nodepool" "pool" {
   service_name  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   kube_id       = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   name          = "my-pool"
-  flavor_name   = "b2-7"
-  desired_nodes = 3
-  max_nodes     = 3
+  flavor_name   = "b3-8"
+  autoscale     = true
+  anti_affinity = true // maximum 5 nodes in the node pool with the anti-affinity
+  max_nodes     = 5
   min_nodes     = 3
   template {
     metadata {
@@ -68,10 +80,11 @@ The following arguments are supported:
 * `name` - (Optional) The name of the nodepool. Warning: `_` char is not allowed! **Changing this value recreates the resource.**
 * `flavor_name` - a valid OVHcloud public cloud flavor ID in which the nodes will be started. Ex: "b2-7". You can find the list of flavor IDs: https://www.ovhcloud.com/fr/public-cloud/prices/. **Changing this value recreates the resource.**
 * `desired_nodes` - number of nodes to start.
+* `availability_zone` - list of availability zones - mandatory for multi-zone managed kubernetes cluster - only one is supported at the moment. **Changing this value recreates the resource.**
 * `max_nodes` - maximum number of nodes allowed in the pool. Setting `desired_nodes` over this value will raise an error.
 * `min_nodes` - minimum number of nodes allowed in the pool. Setting `desired_nodes` under this value will raise an error.
 * `monthly_billed` - (Optional) should the nodes be billed on a monthly basis. Default to `false`. **Changing this value recreates the resource.**
-* `anti_affinity` - (Optional) should the pool use the anti-affinity feature. Default to `false`. **Changing this value recreates the resource.**
+* `anti_affinity` - (Optional) should the pool use the anti-affinity feature. Default to `false`. Max. 5 nodes per pool. **Changing this value recreates the resource.**
 * `autoscale` - (Optional) Enable auto-scaling for the pool. Default to `false`.
 * `autoscaling_scale_down_unneeded_time_seconds` - (Optional) scaleDownUnneededTimeSeconds autoscaling parameter How long a node should be unneeded before it is eligible for scale down
 * `autoscaling_scale_down_unready_time_seconds` - (Optional) scaleDownUnreadyTimeSeconds autoscaling parameter How long an unready node should be unneeded before it is eligible for scale down
